@@ -1,0 +1,30 @@
+# Maestro reports (gerados automaticamente)
+reports/
+
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Claude Code
+.claude/
+
+# Expo / React Native
+shopdemo/node_modules/
+shopdemo/.expo/
+shopdemo/android/
+shopdemo/ios/
+
+# Android Studio
+.idea/
+*.iml
