@@ -45,7 +45,7 @@ jobs:
           script: | 
             adb install ShopDemo.apk 
             mkdir -p reports 
-            maestro test --format junit --output reports/re sultado.xml flows/s3-suite-shopdemo/
+            maestro test --format junit --output reports/resultado.xml flows/s3-suite-shopdemo/
 
       - name: Publicar relatorio JUnit
         uses: actions/upload-artifact@v4
