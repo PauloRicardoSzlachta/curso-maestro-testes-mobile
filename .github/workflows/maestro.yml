@@ -34,6 +34,18 @@ jobs:
           sudo udevadm control --reload-rules 
           sudo udevadm trigger --name-match=kvm
 
+      - name: Debug paths (temporário)
+        run: |
+          pwd
+          echo "--- raiz ---"
+          ls -la
+          echo "--- flows/s3-suite-shopdemo ---"
+          ls -la flows/s3-suite-shopdemo/
+          echo "--- subflows ---"
+          ls -la flows/s3-suite-shopdemo/subflows/
+          echo "--- arquivos versionados ---"
+          git ls-files flows/s3-suite-shopdemo/
+
       - name: Subir emulador e rodar suite
         uses: reactivecircus/android-emulator-runner@v2
         with:
