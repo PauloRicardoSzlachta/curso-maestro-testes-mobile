@@ -24,7 +24,8 @@ jobs:
           java-version: '17'
 
       - name: Instalar Maestro
-        run: | 
+        run: |
+          export MAESTRO_VERSION=2.7.0
           curl -Ls "https://get.maestro.mobile.dev" | bash 
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
