@@ -2,12 +2,19 @@ appId: com.curso.shopdemo
 ---
 - launchApp:
     clearState: true
+- extendedWaitUntil:
+      visible:
+          id: "input-email"
+      timeout: 40000
 - tapOn:
     id: "input-email"
 - inputText: "cliente@shopdemo.com"
 - tapOn:
     id: "input-senha"
 - inputText: "123456"
+
+- tapOn:
+    point: 94%,92%
 
 - tapOn: "btn-entrar"
 

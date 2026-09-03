@@ -2,18 +2,7 @@ appId: com.curso.shopdemo
 ---
 - launchApp:
     clearState: true
-- tapOn:
-    id: "input-email"
-- inputText: "cliente@shopdemo.com"
-- tapOn:
-    id: "input-senha"
-- inputText: "123456"
-- tapOn: "btn-entrar"
-- extendedWaitUntil:
-    visible: 
-        id: "tela-catalogo"
-- assertVisible:
-    id: "tela-catalogo"
+- runFlow: subflows/login.yaml
 - tapOn: "Fone de Ouvido Bluetooth"
 - tapOn:
     id: "btn-adicionar"
