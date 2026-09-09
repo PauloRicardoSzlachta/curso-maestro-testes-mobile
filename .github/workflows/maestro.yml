@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     permissions:
       contents: read
       checks: write
@@ -29,30 +30,6 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Cache AVD
-        uses: actions/cache@v4
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adbkey
-          key: avd-34-x86_64-default-pixel4
-
-      - name: Gerar snapshot do AVD
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          target: default
-          profile: pixel_4
-          cores: 4
-          ram-size: 4096M
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Snapshot do AVD gerado para cache."
-
       - name: Subir emulador e rodar suite
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -62,10 +39,9 @@ jobs:
           profile: pixel_4
           cores: 4
           ram-size: 4096M
-          force-avd-creation: false
           disable-animations: true
           emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save -no-metrics
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-metrics
           script: |
             bash scripts/run-maestro-suite.sh
         env:
