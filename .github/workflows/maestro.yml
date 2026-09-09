@@ -52,12 +52,22 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          profile: pixel_6
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          target: default
+          profile: pixel_4
+          cores: 4
+          ram-size: 4096M
           disable-animations: true
-          script: | 
-            adb install ShopDemo.apk 
-            mkdir -p reports 
+          emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -no-metrics
+          script: |
+            # Suprime diálogos de ANR/crash que cobrem a tela do app
+            adb shell settings put global hide_error_dialogs 1
+            adb shell wm dismiss-keyguard
+
+            # Instala o APK
+            adb install ShopDemo.apk
+
+            # Gera o relatório
+            mkdir -p reports
             cd flows/s3-suite-shopdemo && maestro test --format junit --output ../../reports/resultado.xml .
 
       - name: Publicar relatorio JUnit
