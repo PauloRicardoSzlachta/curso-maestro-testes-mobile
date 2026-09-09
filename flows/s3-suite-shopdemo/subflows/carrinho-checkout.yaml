@@ -1,13 +1,13 @@
-appId: com.example.app
+appId: com.curso.shopdemo
 env:
   PRODUTO_CARRINHO: ${PRODUTO_CARRINHO || "Fone de Ouvido Bluetooth"}
   PRECO_PRODUTO: ${PRECO_PRODUTO || "159,90"}
   TOTAL_CARRINHO: '${TOTAL_CARRINHO || "159,90"}'
   NOME: ${NOME || "Jeferson"}
   ENDERECO: ${ENDERECO || "Rua das Flores, 100"}
-  CARTAO: ${CARTAO || "4111-1111-1111-1111"}  
+  CARTAO: ${CARTAO || "4111-1111-1111-1111"}
 ---
-- scrollUntilVisible: 
+- scrollUntilVisible:
     element: ${PRODUTO_CARRINHO}
     direction: UP
 - tapOn: ${PRODUTO_CARRINHO}
@@ -21,7 +21,8 @@ env:
 - assertVisible:
     id: "btn-finalizar"
     enabled: true
-- tapOn: "btn-finalizar"
+- tapOn:
+    id: "btn-finalizar"
 - tapOn:
     id: "input-nome"
 - inputText: ${NOME}
@@ -31,13 +32,12 @@ env:
 - tapOn:
     id: "input-cartao"
 - inputText: ${CARTAO}
-- tapOn: "Numero do cartao"
-- tapOn:
-    point: 51%,61%
-- extendedWaitUntil:
-    visible:
+- hideKeyboard
+- scrollUntilVisible:
+    element:
       id: "btn-confirmar"
-    timeout: 60000    
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "btn-confirmar"
 - assertVisible: "Pedido confirmado"

@@ -14,7 +14,8 @@ appId: com.curso.shopdemo
 - assertVisible:
     id: "btn-finalizar"
     enabled: true
-- tapOn: "btn-finalizar"
+- tapOn: 
+    id: "btn-finalizar"
 - tapOn:
     id: "input-nome"
 - inputText: "Paulo Ricardo Szlachta"
@@ -24,21 +25,15 @@ appId: com.curso.shopdemo
 - tapOn:
     id: "input-cartao"
 - inputText: "123-456-789"
-- tapOn: "Numero do cartao"
-- tapOn:
-    point: 51%,61%
-- extendedWaitUntil:
-    visible:
+- hideKeyboard
+- scrollUntilVisible:
+    element:
       id: "btn-confirmar"
-    timeout: 60000    
+    direction: DOWN
+    timeout: 30000
 - tapOn:
     id: "btn-confirmar"
 - assertVisible: "Pedido confirmado"
 - assertVisible:
     id: "confirmacao-numero"
 - assertVisible: "Pedido #.*"
-
-
-
-
-
