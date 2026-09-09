@@ -27,6 +27,10 @@ appId: com.curso.shopdemo
 - tapOn: "Numero do cartao"
 - tapOn:
     point: 51%,61%
+- extendedWaitUntil:
+    visible:
+      id: "btn-confirmar"
+    timeout: 30000    
 - tapOn:
     id: "btn-confirmar"
 - assertVisible: "Pedido confirmado"
