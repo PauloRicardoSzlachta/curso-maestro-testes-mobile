@@ -29,17 +29,29 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Debug paths (temporário)
-        run: |
-          pwd
-          echo "--- raiz ---"
-          ls -la
-          echo "--- flows/s3-suite-shopdemo ---"
-          ls -la flows/s3-suite-shopdemo/
-          echo "--- subflows ---"
-          ls -la flows/s3-suite-shopdemo/subflows/
-          echo "--- arquivos versionados ---"
-          git ls-files flows/s3-suite-shopdemo/
+      - name: Cache AVD
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adbkey
+          key: avd-34-x86_64-default-pixel4
+
+      - name: Gerar snapshot do AVD
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          profile: pixel_4
+          cores: 4
+          ram-size: 4096M
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Snapshot do AVD gerado para cache."
 
       - name: Subir emulador e rodar suite
         uses: reactivecircus/android-emulator-runner@v2
@@ -52,7 +64,8 @@ jobs:
           ram-size: 4096M
           disable-animations: true
           emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-metrics
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save -no-metrics 
           script: |
             # Instala o Maestro dentro do container, com a versao fixada na MESMA linha.
             # Cada linha do script roda num shell separado, export nao persiste entre linhas.
