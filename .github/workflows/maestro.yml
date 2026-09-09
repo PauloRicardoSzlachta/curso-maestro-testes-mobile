@@ -62,30 +62,33 @@ jobs:
           profile: pixel_4
           cores: 4
           ram-size: 4096M
+          force-avd-creation: false
           disable-animations: true
           emulator-boot-timeout: 900
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save -no-metrics 
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-save -no-metrics
           script: |
-            # Instala o Maestro dentro do container, com a versao fixada na MESMA linha.
-            # Cada linha do script roda num shell separado, export nao persiste entre linhas.
+            # Instala o Maestro dentro do container
             export MAESTRO_VERSION=2.7.0 && curl -Ls "https://get.maestro.mobile.dev" | bash
-
-            # Checkpoint: usa o caminho absoluto do binario, sem depender de PATH
             "$HOME/.maestro/bin/maestro" --version
 
-            # Suprime dialogos de ANR/crash que cobrem a tela do app
+            # Suprime dialogos de ANR/crash
             adb shell settings put global hide_error_dialogs 1
             adb shell wm dismiss-keyguard
 
             # Instala o APK
             adb install ShopDemo.apk
 
-            # Gera o relatorio
+            # Roda as flows EM SEQUENCIA, uma por vez.
+            # `maestro test .` executa em paralelo no MESMO emulador,
+            # e o launchApp/clearState de uma atropela o login de outra.
             mkdir -p reports
-            cd flows/s3-suite-shopdemo && "$HOME/.maestro/bin/maestro" test --format junit --output ../../reports/resultado.xml .
+            cd flows/s3-suite-shopdemo
+            failed=0
+            for flow in 01-login.yaml 02-catalogo.yaml 03-carrinho-checkout.yaml 04-e2e-compra.yaml; do
+              "$HOME/.maestro/bin/maestro" test "$flow" --format junit --output "../../reports/${flow%.yaml}.xml" || failed=1
+            done
+            exit $failed
         env:
-          # Da 3 minutos para o driver do Maestro subir no emulador lento
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
           MAESTRO_CLI_NO_ANALYTICS: "1"
 
@@ -94,7 +97,7 @@ jobs:
         if: always()
         with:
           name: relatorio-maestro
-          path: reports/resultado.xml
+          path: reports/
 
       - name: Publicar screenshots
         if: always() && hashFiles('.maestro/screenshots/**') != ''
@@ -108,6 +111,6 @@ jobs:
         if: always()
         with:
           name: Maestro Suite
-          path: reports/resultado.xml
+          path: reports/*.xml
           reporter: java-junit
           fail-on-error: false
