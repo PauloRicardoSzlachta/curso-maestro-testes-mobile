@@ -23,15 +23,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Instalar Maestro
-        run: |
-          export MAESTRO_VERSION=2.7.0
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
-
       - name: Habilitar KVM
         run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
@@ -60,18 +54,24 @@ jobs:
           emulator-boot-timeout: 900
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-metrics
           script: |
-            # Suprime diálogos de ANR/crash que cobrem a tela do app
+            # Instala o Maestro DENTRO do container do emulador.
+            # O passo de instalacao fora daqui roda no host e nao e visivel aqui.
+            export MAESTRO_VERSION=2.7.0
+            curl -Ls "https://get.maestro.mobile.dev" | bash
+            export PATH="$PATH:$HOME/.maestro/bin"
+
+            # Suprime dialogos de ANR/crash que cobrem a tela do app
             adb shell settings put global hide_error_dialogs 1
             adb shell wm dismiss-keyguard
 
             # Instala o APK
             adb install ShopDemo.apk
 
-            # Gera o relatório
+            # Gera o relatorio
             mkdir -p reports
             cd flows/s3-suite-shopdemo && maestro test --format junit --output ../../reports/resultado.xml .
         env:
-          # Dá 3 minutos para o driver do Maestro subir no emulador lento
+          # Da 3 minutos para o driver do Maestro subir no emulador lento
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
           MAESTRO_CLI_NO_ANALYTICS: "1"
 
