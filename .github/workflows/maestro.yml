@@ -54,11 +54,12 @@ jobs:
           emulator-boot-timeout: 900
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-metrics
           script: |
-            # Instala o Maestro DENTRO do container do emulador.
-            # O passo de instalacao fora daqui roda no host e nao e visivel aqui.
-            export MAESTRO_VERSION=2.7.0
-            curl -Ls "https://get.maestro.mobile.dev" | bash
-            export PATH="$PATH:$HOME/.maestro/bin"
+            # Instala o Maestro dentro do container, com a versao fixada na MESMA linha.
+            # Cada linha do script roda num shell separado, export nao persiste entre linhas.
+            export MAESTRO_VERSION=2.7.0 && curl -Ls "https://get.maestro.mobile.dev" | bash
+
+            # Checkpoint: usa o caminho absoluto do binario, sem depender de PATH
+            "$HOME/.maestro/bin/maestro" --version
 
             # Suprime dialogos de ANR/crash que cobrem a tela do app
             adb shell settings put global hide_error_dialogs 1
@@ -69,7 +70,7 @@ jobs:
 
             # Gera o relatorio
             mkdir -p reports
-            cd flows/s3-suite-shopdemo && maestro test --format junit --output ../../reports/resultado.xml .
+            cd flows/s3-suite-shopdemo && "$HOME/.maestro/bin/maestro" test --format junit --output ../../reports/resultado.xml .
         env:
           # Da 3 minutos para o driver do Maestro subir no emulador lento
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
