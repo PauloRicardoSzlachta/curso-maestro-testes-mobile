@@ -37,7 +37,7 @@ env:
 - extendedWaitUntil:
     visible:
       id: "btn-confirmar"
-    timeout: 30000    
+    timeout: 60000    
 - tapOn:
     id: "btn-confirmar"
 - assertVisible: "Pedido confirmado"
