@@ -26,13 +26,13 @@ jobs:
       - name: Instalar Maestro
         run: |
           export MAESTRO_VERSION=2.7.0
-          curl -Ls "https://get.maestro.mobile.dev" | bash 
+          curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
       - name: Habilitar KVM
-        run: | 
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OP TIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-k vm4all.rules 
-          sudo udevadm control --reload-rules 
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
       - name: Debug paths (temporário)
@@ -57,7 +57,8 @@ jobs:
           cores: 4
           ram-size: 4096M
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -no-metrics
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-metrics
           script: |
             # Suprime diálogos de ANR/crash que cobrem a tela do app
             adb shell settings put global hide_error_dialogs 1
@@ -69,6 +70,10 @@ jobs:
             # Gera o relatório
             mkdir -p reports
             cd flows/s3-suite-shopdemo && maestro test --format junit --output ../../reports/resultado.xml .
+        env:
+          # Dá 3 minutos para o driver do Maestro subir no emulador lento
+          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
+          MAESTRO_CLI_NO_ANALYTICS: "1"
 
       - name: Publicar relatorio JUnit
         uses: actions/upload-artifact@v4
@@ -78,8 +83,8 @@ jobs:
           path: reports/resultado.xml
 
       - name: Publicar screenshots
+        if: always() && hashFiles('.maestro/screenshots/**') != ''
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: screenshots-maestro
           path: .maestro/screenshots/
