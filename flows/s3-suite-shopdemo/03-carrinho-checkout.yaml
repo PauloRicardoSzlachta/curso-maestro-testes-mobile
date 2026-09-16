@@ -25,14 +25,19 @@ appId: com.curso.shopdemo
 - tapOn:
     id: "input-cartao"
 - inputText: "123-456-789"
-- hideKeyboard
+- tapOn: "Numero do cartao"
+- runFlow:
+    when:
+      notVisible:
+        id: "btn-confirmar"
+    commands:
+      - hideKeyboard
 - scrollUntilVisible:
     element:
       id: "btn-confirmar"
     direction: DOWN
     timeout: 30000
-- tapOn:
-    id: "btn-confirmar"
+- doubleTapOn: "btn-confirmar"
 - assertVisible: "Pedido confirmado"
 - assertVisible:
     id: "confirmacao-numero"
