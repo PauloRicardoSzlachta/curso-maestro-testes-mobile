@@ -48,12 +48,46 @@ jobs:
           MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
           MAESTRO_CLI_NO_ANALYTICS: "1"
 
+      - name: Gerar relatorio consolidado         
+        if: always()
+        run: node gerar-relatorio.js reports/debug reports/relatorio-consolidado.html
+
       - name: Publicar relatorio JUnit
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: relatorio-maestro
-          path: reports/
+          path: reports/resultado.xml
+
+      - name: Publicar debug-output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debug-output-maestro
+          path: reports/debug/
+
+      - name: Preparar site do relatorio
+        if: always()
+        run: |
+          mkdir -p site
+          if [ -f reports/relatorio-consolidado.html ]; then
+            cp reports/relatorio-consolidado.html site/index.html
+          else
+            printf '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatorio de Testes</title></head><body><p>Nenhum relatorio gerado neste run.</p></body></html>' > site/index.html
+          fi
+          if [ -d reports/debug ]; then
+            cp -r reports/debug site/debug
+          fi
+
+      - name: Configurar Pages
+        if: always()
+        uses: actions/configure-pages@v5          
+
+      - name: Publicar artefato do Pages
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
       - name: Publicar screenshots
         if: always() && hashFiles('.maestro/screenshots/**') != ''
@@ -70,3 +104,23 @@ jobs:
           path: reports/*.xml
           reporter: java-junit
           fail-on-error: false
+
+  publicar-relatorio:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ always() && github.event_name == 'push' }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Link do relatorio no resumo
+        run: |
+          echo "Relatorio: ${{ steps.deploy.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"          
