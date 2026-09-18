@@ -18,6 +18,6 @@ mkdir -p reports
 cd flows/s3-suite-shopdemo
 failed=0
 for flow in 01-login.yaml 02-catalogo.yaml 03-carrinho-checkout.yaml 04-e2e-compra.yaml; do
-  "$HOME/.maestro/bin/maestro" test "$flow" --format junit --output "../../reports/${flow%.yaml}.xml" || failed=1
+  "$HOME/.maestro/bin/maestro" test "$flow" --format junit --output "../../reports/${flow%.yaml}.xml" --debug-output ../../reports/debug --test-output-dir ../../reports/debug || failed=1
 done
 exit $failed
