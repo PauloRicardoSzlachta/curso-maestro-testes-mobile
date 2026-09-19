@@ -51,7 +51,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none -memory 4096
           ram-size: 4096M
           disable-animations: true
-          script: bash .github/scripts/run-maestro-suite.sh
+          script: bash scripts/run-maestro-suite.sh
 
       - name: Gerar relatorio consolidado
         if: always()
