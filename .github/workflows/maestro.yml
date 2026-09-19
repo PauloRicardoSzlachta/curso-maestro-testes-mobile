@@ -15,6 +15,10 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      checks: write    
 
     steps:
       - name: Checkout do repositorio
@@ -47,10 +51,13 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
+          target: default
           profile: pixel_6
+          cores: 4          
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none -memory 4096
           ram-size: 4096M
           disable-animations: true
+          emulator-boot-timeout: 900          
           script: bash scripts/run-maestro-suite.sh
 
       - name: Gerar relatorio consolidado
