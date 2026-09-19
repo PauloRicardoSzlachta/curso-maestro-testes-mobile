@@ -15,10 +15,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
-    permissions:
-      contents: read
-      checks: write
 
     steps:
       - name: Checkout do repositorio
@@ -51,20 +47,13 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          target: default
-          profile: pixel_4
-          cores: 4
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none -memory 4096
           ram-size: 4096M
           disable-animations: true
-          emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-metrics
-          script: |
-            bash scripts/run-maestro-suite.sh
-        env:
-          MAESTRO_DRIVER_STARTUP_TIMEOUT: "180000"
-          MAESTRO_CLI_NO_ANALYTICS: "1"
+          script: bash .github/scripts/run-maestro-suite.sh
 
-      - name: Gerar relatorio consolidado         
+      - name: Gerar relatorio consolidado
         if: always()
         run: node gerar-relatorio.js reports/debug reports/relatorio-consolidado.html
 
@@ -97,7 +86,7 @@ jobs:
 
       - name: Configurar Pages
         if: always()
-        uses: actions/configure-pages@v5          
+        uses: actions/configure-pages@v5
 
       - name: Publicar artefato do Pages
         if: always()
@@ -105,19 +94,12 @@ jobs:
         with:
           path: site
 
-      - name: Publicar screenshots
-        if: always() && hashFiles('.maestro/screenshots/**') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots-maestro
-          path: .maestro/screenshots/
-
       - name: Exibir resultado no Actions
         uses: dorny/test-reporter@v1
-        if: always()
+        if: always() && hashFiles('reports/resultado.xml') != ''
         with:
           name: Maestro Suite
-          path: reports/*.xml
+          path: reports/resultado.xml
           reporter: java-junit
           fail-on-error: false
 
@@ -139,4 +121,4 @@ jobs:
 
       - name: Link do relatorio no resumo
         run: |
-          echo "Relatorio: ${{ steps.deploy.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"          
+          echo "Relatorio: ${{ steps.deploy.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
