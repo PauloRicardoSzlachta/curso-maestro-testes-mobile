@@ -69,7 +69,7 @@ jobs:
         if: always()
         with:
           name: relatorio-maestro
-          path: reports/resultado.xml
+          path: reports/*.xml
 
       - name: Publicar debug-output
         uses: actions/upload-artifact@v4
@@ -106,7 +106,7 @@ jobs:
         if: always() && hashFiles('reports/resultado.xml') != ''
         with:
           name: Maestro Suite
-          path: reports/resultado.xml
+          path: reports/*.xml
           reporter: java-junit
           fail-on-error: false
 

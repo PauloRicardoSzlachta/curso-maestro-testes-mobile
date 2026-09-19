@@ -6,6 +6,7 @@ set -euo pipefail
 
 SERIAL="emulator-5554"
 APK="ShopDemo.apk"
+MAESTRO="$HOME/.maestro/bin/maestro"
 
 # O driver do Maestro demora mais para subir em runner de CI (padrao: 15s)
 export MAESTRO_DRIVER_STARTUP_TIMEOUT=120000
@@ -57,10 +58,16 @@ adb -s "$SERIAL" logcat -v time > reports/debug/logcat.txt &
 LOGCAT_PID=$!
 trap 'kill "$LOGCAT_PID" 2>/dev/null || true' EXIT
 
-echo "==> Rodando a suite Maestro..."
-maestro test \
-  --format junit \
-  --output reports/resultado.xml \
-  --debug-output reports/debug \
-  --test-output-dir reports/debug \
-  flows/s3-suite-shopdemo/
+echo "==> Rodando flows em sequencia, com reset de estado antes de cada um..."
+failed=0
+for flow in 01-login.yaml 02-catalogo.yaml 03-carrinho-checkout.yaml 04-e2e-compra.yaml; do
+  echo "==> Resetando estado do app antes de $flow"
+  adb -s "$SERIAL" shell pm clear com.curso.shopdemo || true
+  sleep 2
+  "$MAESTRO" test "flows/s3-suite-shopdemo/$flow" \
+    --format junit \
+    --output "reports/${flow%.yaml}.xml" \
+    --debug-output reports/debug \
+    --test-output-dir reports/debug || failed=1
+done
+exit $failed
