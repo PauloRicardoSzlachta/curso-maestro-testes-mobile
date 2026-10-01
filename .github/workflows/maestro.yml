@@ -1,0 +1,131 @@
+name: Maestro Suite
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+  checks: write
+  pages: write
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      checks: write    
+
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Instalar Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash -s 2.6.0
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Habilitar KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Subir emulador e rodar suite
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          profile: pixel_6
+          cores: 4          
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none -memory 4096
+          ram-size: 4096M
+          disable-animations: true
+          emulator-boot-timeout: 900          
+          script: bash scripts/run-maestro-suite.sh
+
+      - name: Gerar relatorio consolidado
+        if: always()
+        run: node gerar-relatorio.js reports/debug reports/relatorio-consolidado.html
+
+      - name: Publicar relatorio JUnit
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: relatorio-maestro
+          path: reports/*.xml
+
+      - name: Publicar debug-output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debug-output-maestro
+          path: reports/debug/
+
+      - name: Preparar site do relatorio
+        if: always()
+        run: |
+          mkdir -p site
+          if [ -f reports/relatorio-consolidado.html ]; then
+            cp reports/relatorio-consolidado.html site/index.html
+          else
+            printf '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatorio de Testes</title></head><body><p>Nenhum relatorio gerado neste run.</p></body></html>' > site/index.html
+          fi
+          if [ -d reports/debug ]; then
+            cp -r reports/debug site/debug
+          fi
+
+      - name: Configurar Pages
+        if: always()
+        uses: actions/configure-pages@v5
+
+      - name: Publicar artefato do Pages
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Exibir resultado no Actions
+        uses: dorny/test-reporter@v1
+        if: always() && hashFiles('reports/resultado.xml') != ''
+        with:
+          name: Maestro Suite
+          path: reports/*.xml
+          reporter: java-junit
+          fail-on-error: false
+
+  publicar-relatorio:
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ always() && github.event_name == 'push' }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Link do relatorio no resumo
+        run: |
+          echo "Relatorio: ${{ steps.deploy.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

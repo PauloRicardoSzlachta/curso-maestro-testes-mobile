@@ -1,0 +1,23 @@
+appId: org.wikipedia
+tags:
+  - android
+  - passing
+  - advanced
+---
+- runFlow: subflows/onboarding-android.yaml
+- tapOn: "Search"
+- runFlow:
+    when:
+      visible: "A Faster way to Search"
+    commands:
+      - tapOn:
+          id: "org.wikipedia:id/touch_outside"
+    label: Dismiss the search-widget promo sheet, if shown
+- tapOn: "Search Wikipedia"
+- tapOn:
+    text: "Non existent view"
+    optional: true
+- runScript: scripts/getSearchQuery.js
+- inputText: ${output.result}
+- assertVisible: ${output.result}
+- runFlow: subflows/launch-clearstate-android.yaml
