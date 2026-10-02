@@ -27,4 +27,12 @@ shopdemo/ios/
 
 # Android Studio
 .idea/
-*.iml
+*.iml*.apk
+*.zip
+*.apk
+*.zip
+*.apk
+*.zip
+samples/sample.apk
+samples/sample.zip
+wikipedia.zip

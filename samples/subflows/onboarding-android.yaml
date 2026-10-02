@@ -1,0 +1,11 @@
+appId: org.wikipedia
+---
+- launchApp:
+    clearState: true
+- tapOn:
+      text: "Non existent view"
+      optional: true
+- tapOn: "Forward"
+- tapOn: "Forward"
+- tapOn: "Forward"
+- tapOn: "Skip"
